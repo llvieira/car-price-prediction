@@ -1,0 +1,136 @@
+---
+title: "Predição de preços de carros"
+author: "Lucas Vieira, Davi Laerte, Tierry, Ronam Sousa, Gabriel"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(caret)
+library(broom)
+library(rpart)
+```
+
+### Leitura dos dados
+
+```{r}
+input <- read.csv('true_car_listings.csv')
+
+# remove attributes from data
+input$City <- NULL
+input$State <- NULL
+input$Vin <- NULL
+input$Make <- NULL
+input$Model <- NULL
+
+# convert categorical variables to numeric
+# must_convert <- sapply(input, is.factor) 
+# converted_data <- sapply(input[, must_convert], unclass) 
+# input <- cbind(input[, !must_convert], converted_data) 
+
+input %>% glimpse()
+
+# use only 1000 samples
+input <- input[1:1000, ]
+```
+
+### Partição dos dados em 80% treinamento e 20% validação
+
+```{r}
+dataPartition <- createDataPartition(y = input$Price, p=0.8, list=FALSE)
+
+set.seed(9560)
+train_data <- input[dataPartition, ]
+test_data <- input[-dataPartition, ]
+```
+
+
+```{r}
+# using cross validation with 10-fold and 5 repetitions
+fitControl <- trainControl(method = "repeatedcv", number = 5, repeats = 10)
+```
+
+### Modelo de árvore de decisão
+
+```{r}
+decision_tree_model <- train(Price ~.,
+                  data = train_data,
+                  method = "rpart",
+                  trControl = fitControl)
+
+decision_tree_model
+```
+
+### Resultado da predição para a árvore de decisão
+
+```{r}
+decision_tree_predict <- predict(decision_tree_model, test_data)
+decision_tree_results <- data.frame(test_data$Price, decision_tree_predict)
+decision_tree_results
+```
+
+
+### Modelo de KNN
+
+```{r}
+k <- expand.grid(k = seq(20, 100, length=20))
+knn_model <- train(Price ~ ., 
+                   data = train_data, 
+                   method = "knn", 
+                   tuneGrid = k, 
+                   preProc = c("center", "scale"), 
+                   trControl = fitControl)
+
+knn_model
+```
+
+### Resultado da predição para o KNN
+
+```{r}
+knn_predict <- predict(knn_model, test_data)
+knn_results <- data.frame(test_data$Price, knn_predict)
+knn_results
+```
+
+### Modelo de regressão linear
+
+```{r}
+linear_model <- train(Price ~., 
+                      data = train_data, 
+                      method = "lm",
+                      trControl = fitControl,
+                      na.action = na.omit)
+linear_model
+```
+
+### Resultado da predição para a regressão linear
+
+```{r}
+linear_model_predict <- predict(linear_model, test_data)
+linear_model_results <- data.frame(test_data$Price, linear_model_predict)
+linear_model_results
+```
+
+### Comparando resultados
+
+```{r}
+mods <- resamples(list(LINEAR_REG = linear_model, DECISION_TREE = decision_tree_model))
+summary(mods)
+```
+
+
+### Importância das variáveis para os modelos
+
+```{r}
+varImp(decision_tree)
+varImp(knn_model)
+varImp(linear_model)
+```
+
