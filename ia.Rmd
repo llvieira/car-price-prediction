@@ -1,6 +1,6 @@
 ---
 title: "Predição de preços de carros"
-author: "Lucas Vieira, Davi Laerte, Tierry, Ronam Sousa, Gabriel"
+author: "Lucas Vieira, Davi Laerte, Tierry, Ronan Souza, Gabriel"
 output:
   html_document:
     df_print: paged
