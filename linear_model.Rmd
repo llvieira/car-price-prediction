@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, include=FALSE}
-library(tidyverse)
+library(dplyr)
 library(caret)
 library(broom)
 library(rpart)
@@ -23,7 +23,7 @@ O primeiro passo vai utilizar apenas as variaveis Mileage e Year.
 ```{r}
 input <- read.csv('true_car_listings.csv')
 
-input_first <- input %>% select(Price, Year, Mileage)
+input_first = input %>% select(Price, Year, Mileage)
 
 input_first %>% glimpse()
 ```
@@ -68,7 +68,7 @@ linear_model_results_melt <- linear_model_results_melt[order(linear_model_result
 
 ggplot(linear_model_results_melt, aes(x = id, y = value, color = variable)) + 
   geom_line() +
-  labs(x = "Car id", y = "Price car", color = "Data")
+  labs(x = "Car id", y = "Price car", color = "Data", title = "Regressão com Mileage e Year")
 ```
 
 ### Importância das variáveis para os modelos
@@ -126,7 +126,7 @@ linear_model_results_melt_two <- linear_model_results_melt_two[order(linear_mode
 
 ggplot(linear_model_results_melt_two, aes(x = id, y = value, color = variable)) + 
   geom_line() +
-  labs(x = "Car id", y = "Price car", color = "Data")
+  labs(x = "Car id", y = "Price car", color = "Data", title = "Regressão com Mileage, Year e Model")
 ```
 
 ### Importância das variáveis para os modelos
@@ -141,7 +141,7 @@ varImp(linear_model_two, scale = TRUE)
 O segundo passo vai utilizar as variaveis Mileage, Year, Make and Model.
 
 ```{r}
-input_third <- input %>% select(Price, Year, Mileage, Model)
+input_third <- input %>% select(Price, Year, Mileage, Make, Model)
 
 # convert categorical variables to numeric
 must_convert <- sapply(input_third, is.factor)
@@ -186,7 +186,7 @@ linear_model_results_melt_third <- linear_model_results_melt_third[order(linear_
 
 ggplot(linear_model_results_melt_third, aes(x = id, y = value, color = variable)) + 
   geom_line() +
-  labs(x = "Car id", y = "Price car", color = "Data")
+  labs(x = "Car id", y = "Price car", color = "Data", title = "Regressão com Mileage, Year, Make e Model")
 ```
 
 ### Importância das variáveis para os modelos
