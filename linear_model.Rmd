@@ -1,0 +1,196 @@
+---
+title: "Regressão Linear - Car Price Prediction"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(tidyverse)
+library(caret)
+library(broom)
+library(rpart)
+library(reshape2)
+library(ggplot2)
+```
+
+## Primeiro Passo
+
+O primeiro passo vai utilizar apenas as variaveis Mileage e Year.
+
+```{r}
+input <- read.csv('true_car_listings.csv')
+
+input_first <- input %>% select(Price, Year, Mileage)
+
+input_first %>% glimpse()
+```
+
+
+```{r}
+# using cross validation with 10-fold and 5 repetitions
+fitControl <- trainControl(method = "repeatedcv", number = 5, repeats = 10)
+``` 
+
+### Partição dos dados em 80% treinamento e 20% validação
+
+```{r}
+dataPartition <- createDataPartition(y = input_first$Price, p=0.8, list=FALSE)
+
+set.seed(9560)
+train_data <- input_first[dataPartition, ]
+test_data <- input_first[-dataPartition, ]
+``` 
+
+### Modelo de regressão linear
+
+```{r}
+linear_model <- train(Price ~.,
+                      data = train_data,
+                      method = "lm",
+                      trControl = fitControl,
+                      na.action = na.omit)
+linear_model
+```
+
+### Resultado da predição para a regressão linear
+
+```{r}
+linear_model_predict <- predict(linear_model, test_data)
+linear_model_results <- data.frame(test_data$Price, linear_model_predict)
+linear_model_results$id <- 1:nrow(linear_model_results)
+linear_model_results
+
+linear_model_results_melt <- melt(linear_model_results, id.vars=c("id"))
+linear_model_results_melt <- linear_model_results_melt[order(linear_model_results_melt$id),]
+
+ggplot(linear_model_results_melt, aes(x = id, y = value, color = variable)) + 
+  geom_line() +
+  labs(x = "Car id", y = "Price car", color = "Data")
+```
+
+### Importância das variáveis para os modelos
+
+```{r}
+varImp(linear_model, scale = TRUE)
+```
+
+## Segundo Passo
+
+O segundo passo vai utilizar as variaveis Mileage, Year, Model.
+
+```{r}
+input_second <- input %>% select(Price, Year, Mileage, Model)
+
+# convert categorical variables to numeric
+must_convert_two <- sapply(input_second, is.factor)
+converted_data_two <- sapply(input_second[, must_convert_two], unclass)
+input_second <- cbind(input_second[, !must_convert_two], converted_data_two)
+
+input_second %>% glimpse()
+```
+
+### Partição dos dados em 80% treinamento e 20% validação
+
+```{r}
+dataPartition <- createDataPartition(y = input_second$Price, p=0.8, list=FALSE)
+
+set.seed(9560)
+train_data_two <- input_second[dataPartition, ]
+test_data_two <- input_second[-dataPartition, ]
+``` 
+
+### Modelo de regressão linear
+
+```{r}
+linear_model_two <- train(Price ~.,
+                      data = train_data_two,
+                      method = "lm",
+                      trControl = fitControl,
+                      na.action = na.omit)
+linear_model_two
+```
+
+### Resultado da predição para a regressão linear
+
+```{r}
+linear_model_predict_two <- predict(linear_model_two, test_data_two)
+linear_model_results_two <- data.frame(test_data_two$Price, linear_model_predict_two)
+linear_model_results_two$id <- 1:nrow(linear_model_results_two)
+linear_model_results_two
+
+linear_model_results_melt_two <- melt(linear_model_results_two, id.vars=c("id"))
+linear_model_results_melt_two <- linear_model_results_melt_two[order(linear_model_results_melt_two$id),]
+
+ggplot(linear_model_results_melt_two, aes(x = id, y = value, color = variable)) + 
+  geom_line() +
+  labs(x = "Car id", y = "Price car", color = "Data")
+```
+
+### Importância das variáveis para os modelos
+
+```{r}
+varImp(linear_model_two, scale = TRUE)
+```
+
+
+## Terceiro Passo
+
+O segundo passo vai utilizar as variaveis Mileage, Year, Make and Model.
+
+```{r}
+input_third <- input %>% select(Price, Year, Mileage, Model)
+
+# convert categorical variables to numeric
+must_convert <- sapply(input_third, is.factor)
+converted_data <- sapply(input_third[, must_convert], unclass)
+input_third <- cbind(input_third[, !must_convert], converted_data)
+
+input_third %>% glimpse()
+```
+
+### Partição dos dados em 80% treinamento e 20% validação
+
+```{r}
+dataPartition <- createDataPartition(y = input_third$Price, p=0.8, list=FALSE)
+
+set.seed(9560)
+train_data_third <- input_third[dataPartition, ]
+test_data_third <- input_third[-dataPartition, ]
+``` 
+
+### Modelo de regressão linear
+
+```{r}
+linear_model_third <- train(Price ~.,
+                      data = train_data_third,
+                      method = "lm",
+                      trControl = fitControl,
+                      na.action = na.omit)
+
+linear_model_third
+```
+
+### Resultado da predição para a regressão linear
+
+```{r}
+linear_model_predict_third <- predict(linear_model_third, test_data_third)
+linear_model_results_third <- data.frame(test_data_third$Price, linear_model_predict_third)
+linear_model_results_third$id <- 1:nrow(linear_model_results_third)
+linear_model_results_third
+
+linear_model_results_melt_third <- melt(linear_model_results_third, id.vars=c("id"))
+linear_model_results_melt_third <- linear_model_results_melt_third[order(linear_model_results_melt_third$id),]
+
+ggplot(linear_model_results_melt_third, aes(x = id, y = value, color = variable)) + 
+  geom_line() +
+  labs(x = "Car id", y = "Price car", color = "Data")
+```
+
+### Importância das variáveis para os modelos
+
+```{r}
+varImp(linear_model_third, scale = TRUE)
+```
