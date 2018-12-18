@@ -98,39 +98,3 @@ knn_predict <- predict(knn_model, test_data)
 knn_results <- data.frame(test_data$Price, knn_predict)
 knn_results
 ```
-
-### Modelo de regressão linear
-
-```{r}
-linear_model <- train(Price ~., 
-                      data = train_data, 
-                      method = "lm",
-                      trControl = fitControl,
-                      na.action = na.omit)
-linear_model
-```
-
-### Resultado da predição para a regressão linear
-
-```{r}
-linear_model_predict <- predict(linear_model, test_data)
-linear_model_results <- data.frame(test_data$Price, linear_model_predict)
-linear_model_results
-```
-
-### Comparando resultados
-
-```{r}
-mods <- resamples(list(LINEAR_REG = linear_model, DECISION_TREE = decision_tree_model))
-summary(mods)
-```
-
-
-### Importância das variáveis para os modelos
-
-```{r}
-varImp(decision_tree)
-varImp(knn_model)
-varImp(linear_model)
-```
-
